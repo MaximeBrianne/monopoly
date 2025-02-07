@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion avec MetaMask</title>
+</head>
+<body>
+    <h2>Connexion avec MetaMask</h2>
+
+    <form id="login-form" method="POST">
+        {% csrf_token %}
+        <input type="hidden" name="ethereum_address" id="ethereum_address">
+        <button type="button" onclick="connectMetaMask()">Se connecter avec MetaMask</button>
+    </form>
+
+    <script>
+        async function connectMetaMask() {
+            if (window.ethereum) {
+                try {
+                    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+                    document.getElementById("ethereum_address").value = accounts[0];
+                    document.getElementById("login-form").submit();
+                } catch (error) {
+                    console.error("Erreur lors de la connexion à MetaMask", error);
+                }
+            } else {
+                alert("MetaMask n'est pas installé !");
+            }
+        }
+    </script>
+</body>
+</html>
