@@ -1,0 +1,26 @@
+# Ignorer les fichiers spécifiques à l'environnement
+.env
+.env.*
+
+# Ignorer les fichiers de configuration spécifiques à l'utilisateur
+*.log
+
+# Ignorer les fichiers générés par Django
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+db.sqlite3
+migrations/
+
+# Ignorer les fichiers générés par Hardhat
+artifacts/
+cache/
+node_modules/
+build/
+coverage/
+.openzeppelin/
+
+# Ignorer les fichiers générés par les outils de développement
+.vscode/
+.idea/
