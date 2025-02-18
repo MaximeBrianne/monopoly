@@ -1,37 +1,98 @@
 import { ethers } from "ethers";
-import contractABI from "./smart-contracts.json"; // ABI du contrat
-import contractAddressData from "./ArtCollection.json"; // Adresse déployée
+import artCollectionABI from "./smart-contracts.json";
+import contractAddressData from "./ArtCollection.json";
 
-const contractAddress = contractAddressData.ArtCollection; // Adresse du contrat
+const CONTRACT_ADDRESS = contractAddressData.ArtCollection;
 
-export const getBlockchain = async () => {
-  if (!window.ethereum) {
-    alert("Veuillez installer MetaMask !");
-    return null;
-  }
+let provider;
+let signer;
+let contract;
 
-  const provider = new ethers.BrowserProvider(window.ethereum);
-  const signer = await provider.getSigner();
-  const contract = new ethers.Contract(contractAddress, contractABI, signer);
+// Initialiser la connexion
+export const initContract = async () => {
+    if (!window.ethereum) {
+        alert("MetaMask est requis pour interagir avec ce site.");
+        return;
+    }
 
-  return { contract, signer };
+    provider = new ethers.BrowserProvider(window.ethereum);
+    signer = await provider.getSigner();
+    contract = new ethers.Contract(CONTRACT_ADDRESS, artCollectionABI.abi, signer);
 };
 
-export const getArtworks = async () => {
-  try {
-    const { contract } = await getBlockchain();
-    const artworks = await contract.getAllArtworks();
-
-    return artworks.map((artwork, index) => ({
-      id: index,
-      name: artwork.name,
-      artType: artwork.artType,
-      artist: artwork.artist,
-      descriptionHash: artwork.descriptionHash,
-      price: ethers.formatEther(artwork.price), // Convertir Wei en ETH
-    }));
-  } catch (error) {
-    console.error("Erreur lors de la récupération des œuvres d'art :", error);
-    return [];
-  }
+// Ajouter une œuvre (réservé au propriétaire)
+export const mintArtWork = async (_name, _artType, _artist, _descriptionHash, _price) => {
+    try {
+        const tx = await contract.mintArtWork(_name, _artType, _artist, _descriptionHash, _price);
+        await tx.wait();
+        console.log("Œuvre ajoutée avec succès !");
+    } catch (error) {
+        console.error("Erreur lors de l'ajout de l'œuvre :", error);
+    }
 };
+
+// Récupérer toutes les œuvres
+export const getAllArtworks = async () => {
+    try {
+        const artworks = await contract.getAllArtworks();
+        return artworks;
+    } catch (error) {
+        console.error("Erreur lors de la récupération des œuvres :", error);
+    }
+};
+
+// Acheter une œuvre
+export const buyArtWork = async (_tokenId, price) => {
+    try {
+        const tx = await contract.buyArtWork(_tokenId, { value: price });
+        await tx.wait();
+        console.log("Achat réussi !");
+    } catch (error) {
+        console.error("Erreur lors de l'achat :", error);
+    }
+};
+
+// Mettre en vente une œuvre
+export const putArtWorkForSale = async (_tokenId, _price) => {
+    try {
+        const tx = await contract.putArtWorkForSale(_tokenId, _price);
+        await tx.wait();
+        console.log("Œuvre mise en vente !");
+    } catch (error) {
+        console.error("Erreur lors de la mise en vente :", error);
+    }
+};
+
+// Retirer une œuvre de la vente
+export const removeFromSale = async (_tokenId) => {
+    try {
+        const tx = await contract.removeFromSale(_tokenId);
+        await tx.wait();
+        console.log("Œuvre retirée de la vente !");
+    } catch (error) {
+        console.error("Erreur lors du retrait de la vente :", error);
+    }
+};
+
+// Récupérer les œuvres d'un utilisateur (hors vente)
+export const getUserGallery = async () => {
+    try {
+        const userAddress = await signer.getAddress();
+        const allArtworks = await getAllArtworks();
+        return allArtworks.filter((art) => art.owner === userAddress && !art.forSale);
+    } catch (error) {
+        console.error("Erreur lors de la récupération de la galerie :", error);
+    }
+};
+
+// Récupérer les œuvres en vente d'un utilisateur
+export const getUserMarket = async () => {
+    try {
+        const userAddress = await signer.getAddress();
+        const allArtworks = await getAllArtworks();
+        return allArtworks.filter((art) => art.owner === userAddress && art.forSale);
+    } catch (error) {
+        console.error("Erreur lors de la récupération des œuvres en vente :", error);
+    }
+};
+

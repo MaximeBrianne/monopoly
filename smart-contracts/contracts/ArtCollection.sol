@@ -73,9 +73,8 @@ contract ArtCollection is Ownable, ERC721 {
         artworks[_tokenId].price = _price;
     }
 
-    function removeFromSale(uint256 _tokenId) external onlyOwnerOf(_tokenId) {
+    function removeFromSale(uint256 _tokenId) external onlyOwnerOf(_tokenId) hasSpaceInCollection {
         require(artworks[_tokenId].forSale, "L'oeuvre n'est pas en vente");
-        require(ownerOf(_tokenId) == msg.sender, "L'oeuvre ne vous appartient pas.");
         artworks[_tokenId].forSale = false;
     }
 
@@ -117,5 +116,13 @@ contract ArtCollection is Ownable, ERC721 {
     // Récupérer le nombre d'œuvres possédées par un utilisateur
     function getUserArtCount() external view returns (uint256) {
         return userArtCount[msg.sender];
+    }
+
+    function getAllArtworks() external view returns (ArtWork[] memory) {
+        ArtWork[] memory allArtworks = new ArtWork[](tokenId);
+        for (uint256 i = 0; i < tokenId; i++) {
+            allArtworks[i] = artworks[i];
+        }
+        return allArtworks;
     }
 }
