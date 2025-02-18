@@ -49,9 +49,6 @@ contract ArtCollection is Ownable, ERC721 {
         string memory _descriptionHash,
         uint256 _price
     ) external onlyOwner {
-        tokenId++;
-        _safeMint(msg.sender, tokenId);
-
         artworks[tokenId] = ArtWork({
             name: _name,
             artType: _artType,
@@ -60,6 +57,10 @@ contract ArtCollection is Ownable, ERC721 {
             price: _price,
             forSale: false
         });
+
+        _safeMint(msg.sender, tokenId);
+
+        tokenId++;
 
         userArtCount[msg.sender] = userArtCount[msg.sender] + 1; // Incrémenter le nombre d'œuvres
     }
@@ -72,8 +73,14 @@ contract ArtCollection is Ownable, ERC721 {
         artworks[_tokenId].price = _price;
     }
 
+    function removeFromSale(uint256 _tokenId) external onlyOwnerOf(_tokenId) {
+        require(artworks[_tokenId].forSale, "L'oeuvre n'est pas en vente");
+        require(ownerOf(_tokenId) == msg.sender, "L'oeuvre ne vous appartient pas.");
+        artworks[_tokenId].forSale = false;
+    }
+
     // Acheter une œuvre d'art mise en vente
-    function buyArtWork(uint256 _tokenId) external payable cooldownCheck {
+    function buyArtWork(uint256 _tokenId) external payable cooldownCheck hasSpaceInCollection {
         ArtWork memory art = artworks[_tokenId];
         require(art.forSale, "L'oeuvre n'est pas en vente");
         require(msg.value == art.price, "Le montant envoye ne correspond pas au prix de l'oeuvre");
@@ -87,6 +94,7 @@ contract ArtCollection is Ownable, ERC721 {
         _transfer(seller, msg.sender, _tokenId);
 
         // Mettre à jour les informations
+        previousOwners[_tokenId].push(seller);
         artworks[_tokenId].forSale = false; // Annuler la vente
         userArtCount[seller] = userArtCount[seller] - 1; // Décrémenter le nombre d'œuvres du vendeur
         userArtCount[msg.sender] = userArtCount[msg.sender] + 1; // Incrémenter le nombre d'œuvres de l'acheteur
