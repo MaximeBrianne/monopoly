@@ -1,23 +1,10 @@
-import React, { useState } from 'react';
-import './App.css';
-import MetaMaskAuth from './components/MetaMaskAuth';
-import Dashboard from './components/Dashboard';
+import CreateArtwork from "./components/CreateArtwork";
 
 function App() {
-  const [account, setAccount] = useState(null);
-
-  const handleLogin = (accountAddress) => {
-    setAccount(accountAddress);
-  };
-
   return (
-    <div className="App">
-      <h1>Échange de Cartes Web3</h1>
-      {!account ? (
-        <MetaMaskAuth onLogin={handleLogin} />
-      ) : (
-        <Dashboard account={account} />
-      )}
+    <div>
+      <h1>Plateforme de Collection d'Art</h1>
+      <CreateArtwork />
     </div>
   );
 }

@@ -18,7 +18,7 @@ contract ArtCollection is Ownable, ERC721 {
 
     uint256 public tokenId = 0;
     uint256 public constant MAX_ARTWORKS_PER_USER = 10; // Limite d'œuvres par utilisateur
-    
+
     mapping(uint256 => ArtWork) public artworks;
     mapping(address => uint256) public userArtCount; // Nombre d'œuvres possédées par un utilisateur
     mapping(uint256 => address[]) public previousOwners;
@@ -38,7 +38,7 @@ contract ArtCollection is Ownable, ERC721 {
 
     modifier hasSpaceInCollection() {
         require(userArtCount[msg.sender] < MAX_ARTWORKS_PER_USER, "Vous avez atteint la limite d'oeuvres possedees");
-        _; 
+        _;
     }
 
     // Créer une œuvre d'art unique
@@ -109,5 +109,18 @@ contract ArtCollection is Ownable, ERC721 {
     // Récupérer le nombre d'œuvres possédées par un utilisateur
     function getUserArtCount() external view returns (uint256) {
         return userArtCount[msg.sender];
+    }
+
+    function getAllArtworks() external view returns (ArtWork[] memory)
+    {
+        if (tokenId == 0) {
+            return new ArtWork[](0);
+        }
+
+        ArtWork[] memory allArtworks = new ArtWork[](tokenId);
+        for (uint256 i = 1; i <= tokenId; i++) {
+            allArtworks[i - 1] = artworks[i];
+        }
+        return allArtworks;
     }
 }
