@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 const app = express();
-app.use(express.static('public')); // Sert les fichiers statiques, comme ton HTML
+app.use(express.static('public'));
 
 // Route de test pour vérifier si le serveur fonctionne
 app.get('/', (req, res) => {
