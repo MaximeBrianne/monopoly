@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Envoyer un fichier sur IPFS</title>
+</head>
+<body>
+  <h1>Envoyer un fichier sur IPFS</h1>
+  <input type="file" id="fileInput" />
+  <button id="uploadButton">Envoyer sur IPFS</button>
+
+  <script>
+    // Fonction pour uploader le fichier sur IPFS
+    async function uploadFile() {
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        console.error('Aucun fichier sélectionné');
+        return;
+      }
+
+      const client = IpfsHttpClient.create({ url: 'http://localhost:5001' }); // Assurez-vous que votre nœud IPFS est bien lancé sur ce port
+
+      try {
+        const added = await client.add(file);
+        console.log('Fichier ajouté à IPFS avec le CID :', added.path); // Afficher le CID dans la console
+      } catch (error) {
+        console.error('Erreur lors de l\'upload sur IPFS :', error);
+      }
+    }
+
+    // Attache l'événement de clic au bouton après que la page soit entièrement chargée
+    document.addEventListener('DOMContentLoaded', () => {
+      const uploadButton = document.getElementById('uploadButton');
+      uploadButton.onclick = uploadFile;
+    });
+  </script>
+
+  <!-- Charger la bibliothèque IPFS -->
+  <script src="https://cdn.jsdelivr.net/npm/ipfs-http-client@58.0.0/dist/index.min.js"></script>
+</body>
+</html>
