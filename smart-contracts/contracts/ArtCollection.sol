@@ -118,11 +118,14 @@ contract ArtCollection is Ownable, ERC721 {
         return userArtCount[msg.sender];
     }
 
-    function getAllArtworks() external view returns (ArtWork[] memory) {
+    function getAllArtworks() external view returns (ArtWork[] memory, address[] memory) {
         ArtWork[] memory allArtworks = new ArtWork[](tokenId);
+        address[] memory owners = new address[](tokenId);
+
         for (uint256 i = 0; i < tokenId; i++) {
             allArtworks[i] = artworks[i];
+            owners[i] = ownerOf(i);
         }
-        return allArtworks;
+        return (allArtworks, owners);
     }
 }
