@@ -1,37 +1,52 @@
 // Market.jsx
-import React, { useEffect, useState } from 'react';
-import { getAllArtworks, buyArtWork } from '../contract/contract';
-import Header from '../components/Header';
+import { useEffect, useState } from 'react';
+import { getUserGallery, getUserMarket, getNotUserMarket } from '../contract/contract';
 
 const Market = () => {
-  const [userAddress, setUserAddress] = useState(null);
-  const [artworks, setArtworks] = useState([]);
+  const [galleryArtworks, setGalleryArtworks] = useState([]);
+  const [stallArtworks, setStallArtworks] = useState([]);
+  const [marketArtworks, setMarketArtworks] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      const provider = window.ethereum;
-      const userSigner = await provider.getSigner();
-      const address = await userSigner.getAddress();
-      setUserAddress(address);
-      const artworksList = await getAllArtworks();
-      setArtworks(artworksList);
-    };
-
-    fetchData();
+    getUserGallery().then((artworks) => {setGalleryArtworks(artworks)});
+    getUserMarket().then((artworks) => {setStallArtworks(artworks)});
+    getNotUserMarket().then((artworks) => {setMarketArtworks(artworks)});
   }, []);
 
-  const handleLogout = () => {
-    setUserAddress(null);
-    setArtworks([]);
-  };
-
-  const handleBuy = async (tokenId, price) => {
-    await buyArtWork(tokenId, price);
-    alert('Achat effectué avec succès');
-  };
-
   return (
-    <h1>MARKET</h1>
+    <div>
+      <h1>MARKET</h1>
+
+      <div>
+        {galleryArtworks.map((artwork) => (
+          <div key={artwork.tokenId}>
+            <p>{artwork.name}</p>
+            <p>{artwork.artist}</p>
+            <p>{artwork.price} ETH</p>
+          </div>
+        ))}
+      </div>
+
+      <div>
+        {stallArtworks.map((artwork) => (
+          <div key={artwork.tokenId}>
+            <p>{artwork.name}</p>
+            <p>{artwork.artist}</p>
+            <p>{artwork.price} ETH</p>
+          </div>
+        ))}
+      </div>
+
+      <div>
+        {marketArtworks.map((artwork) => (
+          <div key={artwork.tokenId}>
+            <p>{artwork.name}</p>
+            <p>{artwork.artist}</p>
+            <p>{artwork.price} ETH</p>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };
 

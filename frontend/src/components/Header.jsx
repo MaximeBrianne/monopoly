@@ -1,31 +1,19 @@
-// Header.jsx
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const Header = ({ userAddress, onLogout }) => {
+const Header = ({ account }) => {
   const navigate = useNavigate();
-
-  const handleLogout = () => {
-    // Déconnexion de MetaMask (reset des informations d'utilisateur)
-    onLogout();
-    navigate('/metamaskauth'); // Rediriger vers la page MetaMaskAuth
-  };
 
   return (
     <header>
       <div>
-        {userAddress ? (
-          <span>Connecté en tant que : {userAddress}</span>
-        ) : (
-          <span>Non connecté</span>
-        )}
+        <span>{account ? `${account.slice(0, 6)}...${account.slice(-4)}` : "Non connecté"}</span>
       </div>
       <div>
-        {userAddress && (
+        {account && (
           <>
             <button onClick={() => navigate('/admin')}>Admin</button>
             <button onClick={() => navigate('/market')}>Market</button>
-            <button onClick={handleLogout}>Déconnexion</button>
           </>
         )}
       </div>

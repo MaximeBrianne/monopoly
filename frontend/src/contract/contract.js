@@ -8,25 +8,26 @@ let provider, signer, contract;
 
 
 export const initContract = async () => {
-  if (!window.ethereum) {
-    alert("MetaMask est requis pour interagir avec ce site.");
-    return;
-  }
+    if (!contract) {
+        if (!window.ethereum) {
+            alert("MetaMask est requis pour interagir avec ce site.");
+            return;
+        }
 
-  // Crée le provider et le signer pour interagir avec le contrat
-  provider = new ethers.BrowserProvider(window.ethereum);
-  signer = await provider.getSigner();
+        // Crée le provider et le signer pour interagir avec le contrat
+        provider = new ethers.BrowserProvider(window.ethereum);
+        signer = await provider.getSigner();
 
-  // Initialisation du contrat avec l'adresse et ABI
-  contract = new ethers.Contract(CONTRACT_ADDRESS, artCollectionABI, signer);
-
-  // Vérifie si le contrat est bien initialisé
-  console.log("Contrat initialisé avec succès:", contract);
+        // Initialisation du contrat avec l'adresse et ABI
+        contract = new ethers.Contract(CONTRACT_ADDRESS, artCollectionABI, signer);
+    }
 };
 
 
 // Ajouter une oeuvre (réservé au propriétaire)
 export const mintArtWork = async (_name, _artType, _artist, _descriptionHash, _price) => {
+    await initContract();
+
     try {
         const tx = await contract.mintArtWork(_name, _artType, _artist, _descriptionHash, _price);
         await tx.wait();
@@ -37,12 +38,15 @@ export const mintArtWork = async (_name, _artType, _artist, _descriptionHash, _p
 };
 
 export const getAllArtworks = async () => {
+    await initContract();
+
     try {
       const totalArtworks = await contract.tokenId(); // Le nombre d'artworks
       const artworksList = [];
 
       for (let i = 0; i < totalArtworks; i++) {
-        const artwork = await contract.artworks(i); // Récupérer l'artwork à partir de son tokenId
+        const artwork = await contract.artworks(i);
+        const owner = await contract.ownerOf(i);
         artworksList.push({
           tokenId: i,
           name: artwork.name,
@@ -50,19 +54,22 @@ export const getAllArtworks = async () => {
           artist: artwork.artist,
           price: artwork.price,
           forSale: artwork.forSale,
+          owner: owner
         });
       }
 
       return artworksList;
     } catch (error) {
       console.error("Erreur lors de la récupération des œuvres:", error);
-      throw error; // Relancer l'erreur pour la capturer dans le composant
+      throw error;
     }
 };
 
 
 // Acheter une oeuvre
 export const buyArtWork = async (_tokenId, price) => {
+    await initContract();
+
     try {
         const tx = await contract.buyArtWork(_tokenId, { value: price });
         await tx.wait();
@@ -85,6 +92,8 @@ export const putArtWorkForSale = async (_tokenId, _price) => {
 
 // Retirer une oeuvre de la vente
 export const removeFromSale = async (_tokenId) => {
+    await initContract();
+
     try {
         const tx = await contract.removeFromSale(_tokenId);
         await tx.wait();
@@ -99,7 +108,10 @@ export const getUserGallery = async () => {
     try {
         const userAddress = await signer.getAddress();
         const allArtworks = await getAllArtworks();
-        return allArtworks.filter((art) => art.owner === userAddress && !art.forSale);
+        const artworks = allArtworks.filter((art) => art.owner === userAddress && !art.forSale);
+        console.log(artworks);
+
+        return artworks;
     } catch (error) {
         console.error("Erreur lors de la récupération de la galerie :", error);
     }
@@ -107,12 +119,34 @@ export const getUserGallery = async () => {
 
 // Récupérer les oeuvres en vente d'un utilisateur
 export const getUserMarket = async () => {
+    await initContract();
+
     try {
         const userAddress = await signer.getAddress();
         const allArtworks = await getAllArtworks();
-        return allArtworks.filter((art) => art.owner === userAddress && art.forSale);
+
+        console.log(allArtworks);
+        console.log(userAddress);
+        const artworks = allArtworks.filter((art) => art.owner === userAddress && art.forSale);
+        console.log(artworks);
+
+        return artworks;
     } catch (error) {
         console.error("Erreur lors de la récupération des oeuvres en vente :", error);
     }
 };
+
+export const getNotUserMarket = async () => {
+    await initContract();
+
+    try {
+        const userAddress = await signer.getAddress();
+        const allArtworks = await getAllArtworks();
+        const artworks = allArtworks.filter((art) => art.owner !== userAddress && art.forSale);
+        console.log(artworks);
+        return artworks;
+    } catch (error) {
+        console.error("Erreur lors de la récupération des oeuvres en vente :", error);
+    }
+}
 

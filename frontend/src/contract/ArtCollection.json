@@ -370,6 +370,11 @@
         "internalType": "struct ArtCollection.ArtWork[]",
         "name": "",
         "type": "tuple[]"
+      },
+      {
+        "internalType": "address[]",
+        "name": "",
+        "type": "address[]"
       }
     ],
     "stateMutability": "view",
