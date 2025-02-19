@@ -10,7 +10,7 @@ async function main() {
   const artCollection = await ArtCollection.deploy();
   await artCollection.waitForDeployment();
 
-  const frontend = path.join(__dirname, '..', '..', 'frontend', 'src', 'smart-contracts');
+  const frontend = path.join(__dirname, '..', '..', 'frontend', 'src', 'contract');
 
   if (!fs.existsSync(frontend)) {
     fs.mkdirSync(frontend, { recursive: true });
@@ -18,7 +18,7 @@ async function main() {
 
   // Enregistre l'adresse du contrat dans le fichier contract.js
   fs.writeFileSync(
-    path.join(frontend, "ArtCollection.json"),
+    path.join(frontend, "ContractAddresses.json"),
     JSON.stringify({ ArtCollection: await artCollection.getAddress() }, undefined, 2)
   );
 
@@ -27,7 +27,7 @@ async function main() {
 
   // Enregistre l'ABI du contrat dans le fichier abi.js
   fs.writeFileSync(
-    path.join(frontend, "smart-contracts.json"),
+    path.join(frontend, "ArtCollection.json"),
     JSON.stringify(abi, null, 2)
   );
 }
