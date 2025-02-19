@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -8,10 +8,7 @@ contract ArtCollection is Ownable, ERC721 {
     enum ArtType { PAINTING, SCULPTURE, PHOTOGRAPHY, DIGITAL_ART, OTHER }
 
     struct ArtWork {
-        string name;
-        ArtType artType;
-        string artist;
-        string descriptionHash; // Lien vers le Hash du texte stocké sur IPFS
+        string metadataURI; // Lien vers le fichier JSON stocké sur IPFS
         uint256 price;
         bool forSale;
     }
@@ -41,19 +38,13 @@ contract ArtCollection is Ownable, ERC721 {
         _; 
     }
 
-    // Créer une œuvre d'art unique
+    // Créer une œuvre d'art unique avec un fichier JSON stocké sur IPFS
     function mintArtWork(
-        string memory _name,
-        ArtType _artType,
-        string memory _artist,
-        string memory _descriptionHash,
+        string memory _metadataURI,
         uint256 _price
     ) external onlyOwner {
         artworks[tokenId] = ArtWork({
-            name: _name,
-            artType: _artType,
-            artist: _artist,
-            descriptionHash: _descriptionHash,
+            metadataURI: _metadataURI,
             price: _price,
             forSale: false
         });
@@ -86,10 +77,10 @@ contract ArtCollection is Ownable, ERC721 {
 
         address seller = ownerOf(_tokenId);
 
-        // Transférer les fonds au vendeur
+        // Transférer au vendeur
         payable(seller).transfer(msg.value);
 
-        // Transférer l'œuvre au nouvel acheteur
+        // Transférer l'œuvre à l'acheteur
         _transfer(seller, msg.sender, _tokenId);
 
         // Mettre à jour les informations
@@ -103,9 +94,9 @@ contract ArtCollection is Ownable, ERC721 {
     }
 
     // Récupérer les métadonnées d'une œuvre d'art
-    function getArtWork(uint256 _tokenId) external view returns (ArtWork memory) {
+    function getArtWork(uint256 _tokenId) external view returns (string memory) {
         require(ownerOf(_tokenId) == msg.sender, "Vous n'etes pas le proprietaire de cette oeuvre");
-        return artworks[_tokenId];
+        return artworks[_tokenId].metadataURI;
     }
 
     // Récupérer les anciens propriétaires d'une œuvre
