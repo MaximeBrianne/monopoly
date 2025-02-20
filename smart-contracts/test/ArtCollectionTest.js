@@ -31,7 +31,7 @@ describe("ArtCollection Contract", function () {
   });
 
   it("should allow a user to buy an artwork", async function () {
-    await artCollection.connect(owner).mintArtWork("The Persistence of Memory", 0, "Salvador DalÃ­", "QmHash", 1);
+    await artCollection.connect(owner).mintArtWork("The Persistence of Memory", 0, "Salvador Dalí", "QmHash", 1);
     await artCollection.connect(owner).putArtWorkForSale(tokenId - 1, 2);
 
     const artwork = await artCollection.artworks(tokenId - 1);

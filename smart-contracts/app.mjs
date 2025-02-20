@@ -13,5 +13,5 @@ app.get('/', (req, res) => {
 // Démarrer le serveur
 const PORT = 3000;
 app.listen(PORT, () => {
-  console.log(`Server started on http://localhost:${PORT}`);
+  consosle.log(`Server started on http://localhost:${PORT}`);
 });
