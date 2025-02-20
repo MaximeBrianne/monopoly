@@ -28,7 +28,7 @@ const MetaMaskAuth = ({ onLogin }) => {
     if (accounts.length > 0) {
       setAccount(accounts[0]);
       onLogin(accounts[0]);
-      navigate("/admin"); // Redirige vers la page admin après connexion
+      navigate("/admin");
     }
   };
 

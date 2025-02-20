@@ -53,7 +53,7 @@ export const getAllArtworks = async () => {
     await initContract();
 
     try {
-      const totalArtworks = await contract.tokenId(); // Le nombre d'artworks
+      const totalArtworks = await contract.tokenId();
       const artworksList = [];
 
       for (let i = 0; i < totalArtworks; i++) {
@@ -72,7 +72,7 @@ export const getAllArtworks = async () => {
 
       return artworksList;
     } catch (error) {
-      console.error("Erreur lors de la récupération des œuvres:", error);
+      console.error("Erreur lors de la récupération des oeuvres:", error);
       throw error;
     }
 };

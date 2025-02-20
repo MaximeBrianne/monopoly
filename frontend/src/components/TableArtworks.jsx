@@ -23,7 +23,7 @@ const TableArtworks = ({ artworks }) => {
           ))
         ) : (
           <tr>
-            <td colSpan="5">Aucune œuvre disponible</td>
+            <td colSpan="5">Aucune oeuvre disponible</td>
           </tr>
         )}
       </tbody>
