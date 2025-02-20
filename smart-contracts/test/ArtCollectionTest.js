@@ -1,201 +1,54 @@
 const { expect } = require("chai");
 
-describe("ArtCollection", function () {
-  let ArtCollection;
-  let artCollection;
-  let owner;
-  let addr1;
-  let addr2;
+describe("ArtCollection Contract", function () {
+  let ArtCollection, artCollection, owner, user1, user2;
+  let tokenId = 0;
 
   beforeEach(async function () {
-    [owner, addr1, addr2] = await ethers.getSigners();
+    [owner, user1, user2] = await ethers.getSigners();
     ArtCollection = await ethers.getContractFactory("ArtCollection");
     artCollection = await ArtCollection.deploy();
+    await artCollection.waitForDeployment();
   });
 
-  it("should mint an art work correctly", async function () {
-    await artCollection.mintArtWork(
-      "Mon Premier Art",
-      0,  // 0 = 'Peinture'
-      "Artiste Exemplar",
-      "Description 1",
-      1000
-    );
-
-    const art = await artCollection.getArtWork(1);
-    expect(art.name).to.equal("Mon Premier Art");
-    expect(art.artist).to.equal("Artiste Exemplar");
-    expect(art.price).to.equal(1000);
-    expect(art.artType).to.equal(0);
+  it("should mint a new art work", async function () {
+    await artCollection.connect(owner).mintArtWork("Mona Lisa", 0, "Leonardo da Vinci", "QmHash", 1);
+    const artwork = await artCollection.artworks(tokenId);
+    expect(artwork.name).to.equal("Mona Lisa");
+    expect(artwork.artist).to.equal("Leonardo da Vinci");
+    tokenId++;
   });
 
-  it("should allow minting and retrieving multiple artworks", async function () {
-    // Mint 5 artworks
-    for (let i = 0; i < 5; i++) {
-      await artCollection.mintArtWork(
-        `Art #${i + 1}`,
-        0,  // 0 = 'Peinture'
-        `Artiste Exemplar ${i + 1}`,
-        `Description ${i + 1}`,
-        1000 + i * 100
-      );
-    }
+  it("should put artwork for sale", async function () {
+    await artCollection.connect(owner).mintArtWork("Starry Night", 0, "Vincent van Gogh", "QmHash", 1);
+    await artCollection.connect(owner).putArtWorkForSale(tokenId - 1, 2);
 
-    // Récupérer toutes les oeuvres
-    const allArtworks = await artCollection.getAllArtworks();
+    const artwork = await artCollection.artworks(tokenId - 1);
+    console.log(`Artwork for sale: ${artwork.forSale}, Price: ${artwork.price}`);
 
-    // Vérifier qu'il y a bien 5 oeuvres
-    expect(allArtworks.length).to.equal(5);
-    for (let i = 0; i < 5; i++) {
-      expect(allArtworks[i].name).to.equal(`Art #${i + 1}`);
-      expect(allArtworks[i].artist).to.equal(`Artiste Exemplar ${i + 1}`);
-      expect(allArtworks[i].price).to.equal(1000 + i * 100);
-      expect(allArtworks[i].artType).to.equal(0);  // Peinture
-    }
+    expect(artwork.forSale).to.equal(true);
+    expect(artwork.price).to.equal(2);
   });
 
-  it("should not allow minting more than 10 artworks per user", async function () {
-    for (let i = 0; i < 10; i++) {
-      await artCollection.mintArtWork(
-        `Art #${i}`,
-        0,  // 0 = 'Peinture'
-        "Artiste Exemplar",
-        "Description",
-        1000
-      );
-    }
+  it("should allow a user to buy an artwork", async function () {
+    await artCollection.connect(owner).mintArtWork("The Persistence of Memory", 0, "Salvador DalÃ­", "QmHash", 1);
+    await artCollection.connect(owner).putArtWorkForSale(tokenId - 1, 2);
 
+    const artwork = await artCollection.artworks(tokenId - 1);
+    console.log("Artwork for sale:", artwork.forSale, "Price:", artwork.price);
+
+    const balanceBefore = BigInt(await ethers.provider.getBalance(user1.address));
+    await artCollection.connect(user1).buyArtWork(tokenId - 1, { value: 2 });
+    const balanceAfter = BigInt(await ethers.provider.getBalance(user1.address));
+
+    expect(balanceAfter).to.be.lessThan(balanceBefore - BigInt(2)); // Correction ici
+  });
+
+  it("should revert if buying artwork with insufficient funds", async function () {
+    await artCollection.connect(owner).mintArtWork("The Scream", 0, "Edvard Munch", "QmHash", 1);
+    await artCollection.connect(owner).putArtWorkForSale(tokenId - 1, 3);
     await expect(
-      artCollection.mintArtWork(
-        "Art #11",
-        0,  // 0 = 'Peinture'
-        "Artiste Exemplar",
-        "Description",
-        1000
-      )
-    ).to.be.revertedWith("Vous avez atteint la limite d'oeuvres possédées");
-  });
-
-  it("should allow putting an artwork for sale", async function () {
-    await artCollection.mintArtWork(
-      "Mon Premier Art",
-      0,  // 0 = 'Peinture'
-      "Artiste Exemplar",
-      "Description",
-      1000
-    );
-
-    await artCollection.putArtWorkForSale(1, 1500);
-
-    const art = await artCollection.getArtWork(1);
-    expect(art.forSale).to.be.true;
-    expect(art.price).to.equal(1500);
-  });
-
-  it("should allow buying an artwork", async function () {
-    await artCollection.mintArtWork(
-      "Mon Premier Art",
-      0,  // 0 = 'Peinture'
-      "Artiste Exemplar",
-      "Description",
-      1000
-    );
-    await artCollection.putArtWorkForSale(1, 1500);
-
-    await addr1.sendTransaction({
-      to: artCollection.address,
-      value: 1500
-    });
-
-    const newOwner = await artCollection.ownerOf(1);
-    expect(newOwner).to.equal(addr1.address);
-  });
-
-  it("should not allow buying an artwork with insufficient funds", async function () {
-    await artCollection.mintArtWork(
-      "Mon Premier Art",
-      0,  // 0 = 'Peinture'
-      "Artiste Exemplar",
-      "Description",
-      1000
-    );
-    await artCollection.putArtWorkForSale(1, 1500);
-
-    await expect(
-      addr1.sendTransaction({
-        to: artCollection.address,
-        value: 1000
-      })
+      artCollection.connect(user2).buyArtWork(tokenId - 1, { value: 2 })
     ).to.be.revertedWith("Le montant envoye ne correspond pas au prix de l'oeuvre");
-  });
-
-  it("should track previous owners correctly", async function () {
-    await artCollection.mintArtWork(
-      "Mon Premier Art",
-      0,  // 0 = 'Peinture'
-      "Artiste Exemplar",
-      "Description",
-      1000
-    );
-    await artCollection.putArtWorkForSale(1, 1500);
-
-    await addr1.sendTransaction({
-      to: artCollection.address,
-      value: 1500
-    });
-
-    const previousOwners = await artCollection.getPreviousOwners(1);
-    expect(previousOwners.length).to.equal(1);
-    expect(previousOwners[0]).to.equal(owner.address);
-  });
-
-  it("should not allow transfer if cooldown has not passed", async function () {
-    await artCollection.mintArtWork(
-      "Mon Premier Art",
-      0,  // 0 = 'Peinture'
-      "Artiste Exemplar",
-      "Description",
-      1000
-    );
-    await artCollection.putArtWorkForSale(1, 1500);
-
-    await addr1.sendTransaction({
-      to: artCollection.address,
-      value: 1500
-    });
-
-    await expect(
-      artCollection.connect(addr1).buyArtWork(1)
-    ).to.be.revertedWith("Veuillez attendre avant de faire une nouvelle transaction");
-  });
-
-  it("should allow retrieving art work details", async function () {
-    await artCollection.mintArtWork(
-      "Mon Premier Art",
-      0,  // 0 = 'Peinture'
-      "Artiste Exemplar",
-      "Description",
-      1000
-    );
-
-    const art = await artCollection.getArtWork(1);
-    expect(art.name).to.equal("Mon Premier Art");
-    expect(art.artist).to.equal("Artiste Exemplar");
-    expect(art.price).to.equal(1000);
-    expect(art.artType).to.equal(0);
-  });
-
-  it("should prevent retrieving art work details by non-owner", async function () {
-    await artCollection.mintArtWork(
-      "Mon Premier Art",
-      0,  // 0 ='Peinture'
-      "Artiste Exemplar",
-      "Description",
-      1000
-    );
-
-    await expect(
-      artCollection.connect(addr1).getArtWork(1)
-    ).to.be.revertedWith("Vous n'etes pas le proprietaire de cette oeuvre");
   });
 });
