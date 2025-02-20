@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { ethers, formatEther } from "ethers";
 import artCollectionABI from "./ArtCollection.json";
 import contractAddressData from "./ContractAddresses.json";
 
@@ -23,6 +23,18 @@ export const initContract = async () => {
     }
 };
 
+export const getUserBalance = async () => {
+    await initContract();
+
+    try {
+      const userAddress = await signer.getAddress();
+      const balance = await provider.getBalance(userAddress);
+      return formatEther(balance);
+    } catch (error) {
+      console.error("Erreur lors de la récupération du solde :", error);
+      return "0";
+    }
+};
 
 // Ajouter une oeuvre (réservé au propriétaire)
 export const mintArtWork = async (_name, _artType, _artist, _descriptionHash, _price) => {
@@ -81,6 +93,8 @@ export const buyArtWork = async (_tokenId, price) => {
 
 // Mettre en vente une oeuvre
 export const putArtWorkForSale = async (_tokenId, _price) => {
+    await initContract();
+
     try {
         const tx = await contract.putArtWorkForSale(_tokenId, _price);
         await tx.wait();
@@ -105,6 +119,8 @@ export const removeFromSale = async (_tokenId) => {
 
 // Récupérer les oeuvres d'un utilisateur (hors vente)
 export const getUserGallery = async () => {
+    await initContract();
+
     try {
         const userAddress = await signer.getAddress();
         const allArtworks = await getAllArtworks();
