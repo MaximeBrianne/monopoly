@@ -15,7 +15,7 @@ contract ArtCollection is Ownable, ERC721 {
 
     uint256 public tokenId = 0;
     uint256 public constant MAX_ARTWORKS_PER_USER = 10; // Limite d'oeuvres par utilisateur
-    
+
     mapping(uint256 => ArtWork) public artworks;
     mapping(address => uint256) public userArtCount; // Nombre d'oeuvres possédées par un utilisateur
     mapping(uint256 => address[]) public previousOwners;
@@ -35,14 +35,14 @@ contract ArtCollection is Ownable, ERC721 {
 
     modifier hasSpaceInCollection() {
         require(userArtCount[msg.sender] < MAX_ARTWORKS_PER_USER, "Vous avez atteint la limite d'oeuvres possedees");
-        _; 
+        _;
     }
 
     // Créer une oeuvre d'art unique avec un fichier JSON stocké sur IPFS
     function mintArtWork(
         string memory _metadataURI,
         uint256 _price
-    ) external onlyOwner {
+    ) external {
         artworks[tokenId] = ArtWork({
             metadataURI: _metadataURI,
             price: _price,
@@ -80,7 +80,7 @@ contract ArtCollection is Ownable, ERC721 {
         // Transférer au vendeur
         payable(seller).transfer(msg.value);
 
-        // Transférer l'oeuvre à l'acheteur
+        // Transférer l'oeuvre au nouvel acheteur
         _transfer(seller, msg.sender, _tokenId);
 
         // Mettre à jour les informations
@@ -109,11 +109,14 @@ contract ArtCollection is Ownable, ERC721 {
         return userArtCount[msg.sender];
     }
 
-    function getAllArtworks() external view returns (ArtWork[] memory) {
+    function getAllArtworks() external view returns (ArtWork[] memory, address[] memory) {
         ArtWork[] memory allArtworks = new ArtWork[](tokenId);
+        address[] memory owners = new address[](tokenId);
+
         for (uint256 i = 0; i < tokenId; i++) {
             allArtworks[i] = artworks[i];
+            owners[i] = ownerOf(i);
         }
-        return allArtworks;
+        return (allArtworks, owners);
     }
 }

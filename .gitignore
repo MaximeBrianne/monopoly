@@ -15,3 +15,34 @@ node_modules
 
 # Hardhat Ignition default folder for deployments against a local node
 ignition/deployments/chain-31337
+# Ignorer les fichiers spécifiques à l'environnement
+.env
+.env.*
+
+# Ignorer les fichiers de configuration spécifiques à l'utilisateur
+*.log
+
+# Ignorer les fichiers générés par Django
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+db.sqlite3
+migrations/
+
+# Ignorer les fichiers générés par Hardhat
+artifacts/
+cache/
+node_modules/
+build/
+coverage/
+.openzeppelin/
+
+# Ignorer les fichiers générés par les outils de développement
+.vscode/
+.idea/
+
+# Ignorer les fichiers généré par Hardhat & Ethereum
+*.sol.cache
+typechain/
+typechain-types/
