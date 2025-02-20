@@ -266,7 +266,22 @@
     "outputs": [
       {
         "internalType": "string",
-        "name": "metadataURI",
+        "name": "name",
+        "type": "string"
+      },
+      {
+        "internalType": "enum ArtCollection.ArtType",
+        "name": "artType",
+        "type": "uint8"
+      },
+      {
+        "internalType": "string",
+        "name": "artist",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "descriptionHash",
         "type": "string"
       },
       {
@@ -323,7 +338,22 @@
         "components": [
           {
             "internalType": "string",
-            "name": "metadataURI",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "enum ArtCollection.ArtType",
+            "name": "artType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "string",
+            "name": "artist",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "descriptionHash",
             "type": "string"
           },
           {
@@ -340,11 +370,6 @@
         "internalType": "struct ArtCollection.ArtWork[]",
         "name": "",
         "type": "tuple[]"
-      },
-      {
-        "internalType": "address[]",
-        "name": "",
-        "type": "address[]"
       }
     ],
     "stateMutability": "view",
@@ -380,9 +405,41 @@
     "name": "getArtWork",
     "outputs": [
       {
-        "internalType": "string",
+        "components": [
+          {
+            "internalType": "string",
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "internalType": "enum ArtCollection.ArtType",
+            "name": "artType",
+            "type": "uint8"
+          },
+          {
+            "internalType": "string",
+            "name": "artist",
+            "type": "string"
+          },
+          {
+            "internalType": "string",
+            "name": "descriptionHash",
+            "type": "string"
+          },
+          {
+            "internalType": "uint256",
+            "name": "price",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "forSale",
+            "type": "bool"
+          }
+        ],
+        "internalType": "struct ArtCollection.ArtWork",
         "name": "",
-        "type": "string"
+        "type": "tuple"
       }
     ],
     "stateMutability": "view",
@@ -467,7 +524,22 @@
     "inputs": [
       {
         "internalType": "string",
-        "name": "_metadataURI",
+        "name": "_name",
+        "type": "string"
+      },
+      {
+        "internalType": "enum ArtCollection.ArtType",
+        "name": "_artType",
+        "type": "uint8"
+      },
+      {
+        "internalType": "string",
+        "name": "_artist",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_descriptionHash",
         "type": "string"
       },
       {

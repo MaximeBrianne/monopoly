@@ -66,6 +66,7 @@ export const getAllArtworks = async () => {
           artist: artwork.artist,
           price: artwork.price,
           forSale: artwork.forSale,
+          descriptionHash: artwork.descriptionHash,
           owner: owner
         });
       }

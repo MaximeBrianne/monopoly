@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
@@ -8,18 +8,21 @@ contract ArtCollection is Ownable, ERC721 {
     enum ArtType { PAINTING, SCULPTURE, PHOTOGRAPHY, DIGITAL_ART, OTHER }
 
     struct ArtWork {
-        string metadataURI; // Lien vers le fichier JSON stocké sur IPFS
+        string name;
+        ArtType artType;
+        string artist;
+        string descriptionHash;
         uint256 price;
         bool forSale;
     }
 
     uint256 public tokenId = 0;
-    uint256 public constant MAX_ARTWORKS_PER_USER = 10; // Limite d'oeuvres par utilisateur
+    uint256 public constant MAX_ARTWORKS_PER_USER = 10;
 
     mapping(uint256 => ArtWork) public artworks;
-    mapping(address => uint256) public userArtCount; // Nombre d'oeuvres possédées par un utilisateur
+    mapping(address => uint256) public userArtCount;
     mapping(uint256 => address[]) public previousOwners;
-    mapping(address => uint256) public lastTransactionTime; // Horodatage des dernières transactions
+    mapping(address => uint256) public lastTransactionTime;
 
     constructor() ERC721("ArtCollection", "ART") Ownable(msg.sender) {}
 
@@ -38,13 +41,19 @@ contract ArtCollection is Ownable, ERC721 {
         _;
     }
 
-    // Créer une oeuvre d'art unique avec un fichier JSON stocké sur IPFS
+    // Créer une oeuvre d'art unique
     function mintArtWork(
-        string memory _metadataURI,
+        string memory _name,
+        ArtType _artType,
+        string memory _artist,
+        string memory _descriptionHash,
         uint256 _price
     ) external {
         artworks[tokenId] = ArtWork({
-            metadataURI: _metadataURI,
+            name: _name,
+            artType: _artType,
+            artist: _artist,
+            descriptionHash: _descriptionHash,
             price: _price,
             forSale: true
         });
@@ -53,7 +62,7 @@ contract ArtCollection is Ownable, ERC721 {
 
         tokenId++;
 
-        userArtCount[msg.sender] = userArtCount[msg.sender] + 1; // Incrémenter le nombre d'oeuvres
+        userArtCount[msg.sender] = userArtCount[msg.sender] + 1;
     }
 
     // Mettre une oeuvre en vente
@@ -77,7 +86,7 @@ contract ArtCollection is Ownable, ERC721 {
 
         address seller = ownerOf(_tokenId);
 
-        // Transférer au vendeur
+        // Transférer les fonds au vendeur
         payable(seller).transfer(msg.value);
 
         // Transférer l'oeuvre au nouvel acheteur
@@ -85,18 +94,18 @@ contract ArtCollection is Ownable, ERC721 {
 
         // Mettre à jour les informations
         previousOwners[_tokenId].push(seller);
-        artworks[_tokenId].forSale = false; // Annuler la vente
-        userArtCount[seller] = userArtCount[seller] - 1; // Décrémenter le nombre d'oeuvres du vendeur
-        userArtCount[msg.sender] = userArtCount[msg.sender] + 1; // Incrémenter le nombre d'oeuvres de l'acheteur
+        artworks[_tokenId].forSale = false;
+        userArtCount[seller] = userArtCount[seller] - 1;
+        userArtCount[msg.sender] = userArtCount[msg.sender] + 1;
 
         lastTransactionTime[msg.sender] = block.timestamp;
         lastTransactionTime[seller] = block.timestamp;
     }
 
     // Récupérer les métadonnées d'une oeuvre d'art
-    function getArtWork(uint256 _tokenId) external view returns (string memory) {
+    function getArtWork(uint256 _tokenId) external view returns (ArtWork memory) {
         require(ownerOf(_tokenId) == msg.sender, "Vous n'etes pas le proprietaire de cette oeuvre");
-        return artworks[_tokenId].metadataURI;
+        return artworks[_tokenId];
     }
 
     // Récupérer les anciens propriétaires d'une oeuvre
@@ -109,14 +118,11 @@ contract ArtCollection is Ownable, ERC721 {
         return userArtCount[msg.sender];
     }
 
-    function getAllArtworks() external view returns (ArtWork[] memory, address[] memory) {
+    function getAllArtworks() external view returns (ArtWork[] memory) {
         ArtWork[] memory allArtworks = new ArtWork[](tokenId);
-        address[] memory owners = new address[](tokenId);
-
         for (uint256 i = 0; i < tokenId; i++) {
             allArtworks[i] = artworks[i];
-            owners[i] = ownerOf(i);
         }
-        return (allArtworks, owners);
+        return allArtworks;
     }
 }
